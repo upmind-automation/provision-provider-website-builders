@@ -1,0 +1,27 @@
+{
+    "name": "upmind/provision-provider-website-builders",
+    "description": "This provision category contains the common functions used in provisioning flows for website builders and related tools",
+    "type": "library",
+    "license": "GPL-3.0-only",
+    "authors": [
+        {
+            "name": "Harry Lewis",
+            "email": "harry@upmind.com"
+        }
+    ],
+    "require": {
+        "upmind/provision-provider-base": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Upmind\\ProvisionProviders\\WebsiteBuilders\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Upmind\\ProvisionProviders\\WebsiteBuilders\\LaravelServiceProvider"
+            ]
+        }
+    }
+}
