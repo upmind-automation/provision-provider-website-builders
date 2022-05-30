@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionBase\Provider\Contract\LogsDebugData;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -26,7 +27,7 @@ use Upmind\ProvisionProviders\WebsiteBuilders\Data\UnSuspendParams;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\BaseKit\Data\Configuration;
 use Upmind\ProvisionProviders\WebsiteBuilders\Utils\Helpers;
 
-class Provider extends Category implements ProviderInterface
+class Provider extends Category implements ProviderInterface, LogsDebugData
 {
     /**
      * @var Configuration
@@ -416,6 +417,7 @@ class Provider extends Category implements ProviderInterface
                 'Accept' => 'application/json',
                 'User-Agent' => 'upmind/provision-provider-website-builders v1.0'
             ],
+            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug_mode))
         ]);
     }
 }
