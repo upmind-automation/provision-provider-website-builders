@@ -9,7 +9,7 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
 
 /**
  * @property-read string|integer $account_reference
- * @property-read string $domain_name
+ * @property-read string|null $domain_name
  */
 class AccountIdentifier extends DataSet
 {
@@ -17,7 +17,7 @@ class AccountIdentifier extends DataSet
     {
         return new Rules([
             'account_reference' => ['required'],
-            'domain_name' => ['required', 'domain_name'],
+            'domain_name' => ['nullable', 'domain_name'],
         ]);
     }
 }

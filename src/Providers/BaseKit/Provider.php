@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionBase\Provider\Contract\LogsDebugData;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -26,7 +27,7 @@ use Upmind\ProvisionProviders\WebsiteBuilders\Data\UnSuspendParams;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\BaseKit\Data\Configuration;
 use Upmind\ProvisionProviders\WebsiteBuilders\Utils\Helpers;
 
-class Provider extends Category implements ProviderInterface
+class Provider extends Category implements ProviderInterface, LogsDebugData
 {
     /**
      * @var Configuration
@@ -54,12 +55,12 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             $userRef = $this->createUser($params);
-            $this->createWebsite($userRef, $params->domain_name);
+            $domainName = $this->createWebsite($userRef, $params->domain_name);
             $this->setUserPackage($userRef, $params->package_reference, $params->billing_cycle_months);
 
             return new AccountInfo([
                 'account_reference' => $userRef,
-                'domain_name' => $params->domain_name,
+                'domain_name' => $domainName,
                 'package_reference' => $params->package_reference,
                 'suspended' => $params->package_reference == $this->configuration->suspension_package_ref,
                 'site_count' => 1,
@@ -149,9 +150,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getAccountInfo($userReference, string $domainName): AccountInfo
+    public function getAccountInfo($userReference, ?string $domainName = null): AccountInfo
     {
         $userData = $this->getUserData($userReference);
         $packageRef = $userData->subscriptionPackageRef;
@@ -159,6 +160,10 @@ class Provider extends Category implements ProviderInterface
 
         $sitesData = $this->getUserSitesData($userReference);
         $numSites = count($sitesData);
+
+        if (is_null($domainName)) {
+            $domainName = $sitesData[0]->primaryDomain->domainName ?? null;
+        }
 
         return AccountInfo::create([
             'account_reference' => $userReference,
@@ -225,20 +230,22 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
+     *
+     * @return string Website domain name
      */
-    public function createWebsite($userReference, string $domainName): int
+    public function createWebsite($userReference, ?string $domainName = null): string
     {
         $response = $this->client()->post('/sites', [
-            RequestOptions::JSON => [
+            RequestOptions::JSON => array_filter([
                 'brandRef' => $this->configuration->brand_ref,
                 'accountHolderRef' => $userReference,
                 'domain' => $domainName,
-                // 'subdomain' => str_replace('.', '-', $domainName)
-            ],
+                'createDemoDomain' => empty($domainName),
+            ]),
         ]);
 
-        return $this->getResponseData($response)->site->ref; // site ref
+        return $this->getResponseData($response)->site->primaryDomain->domainName;
     }
 
     /**
@@ -258,9 +265,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getLoginUrl($userReference, string $domainName): string
+    public function getLoginUrl($userReference, ?string $domainName = null): string
     {
         $response = $this->client()->post(sprintf('/users/%s/auto-login', $userReference), [
             RequestOptions::JSON => [
@@ -269,26 +276,22 @@ class Provider extends Category implements ProviderInterface
         ]);
         $data = $this->getResponseData($response);
 
-        if (!empty($data->flowUrl)) {
-            return $data->flowUrl;
-        }
+        $r = $this->configuration->auto_login_redirect_url;
 
-        $hash = $data->hash;
-
-        return Str::replaceFirst('rest', 'flow', $this->configuration->api_url)
-            . '/login?' . http_build_query(compact('hash'));
+        $join = Str::contains($data->flowUrl, '?') ? '&' : '?';
+        return $data->flowUrl . $join . http_build_query(compact('r'));
     }
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getDomainSiteReference($userReference, string $domainName): int
+    public function getDomainSiteReference($userReference, ?string $domainName = null): int
     {
         $sitesData = $this->getUserSitesData($userReference);
 
         foreach ($sitesData as $site) {
-            if (strcasecmp($domainName, $site->primaryDomain->domainName) === 0) {
+            if ($domainName && strcasecmp($domainName, $site->primaryDomain->domainName) === 0) {
                 return $site->ref;
             }
         }
@@ -414,6 +417,9 @@ class Provider extends Category implements ProviderInterface
                 'Accept' => 'application/json',
                 'User-Agent' => 'upmind/provision-provider-website-builders v1.0'
             ],
+            RequestOptions::TIMEOUT => 10, // seconds
+            RequestOptions::CONNECT_TIMEOUT => 5, // seconds
+            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug_mode))
         ]);
     }
 }
