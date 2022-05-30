@@ -417,6 +417,8 @@ class Provider extends Category implements ProviderInterface, LogsDebugData
                 'Accept' => 'application/json',
                 'User-Agent' => 'upmind/provision-provider-website-builders v1.0'
             ],
+            RequestOptions::TIMEOUT => 10, // seconds
+            RequestOptions::CONNECT_TIMEOUT => 5, // seconds
             'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug_mode))
         ]);
     }
