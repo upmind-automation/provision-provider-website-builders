@@ -276,10 +276,13 @@ class Provider extends Category implements ProviderInterface, LogsDebugData
         ]);
         $data = $this->getResponseData($response);
 
-        $r = $this->configuration->auto_login_redirect_url;
+        $loginUrl = $data->flowUrl;
 
-        $join = Str::contains($data->flowUrl, '?') ? '&' : '?';
-        return $data->flowUrl . $join . http_build_query(compact('r'));
+        if ($r = $this->configuration->auto_login_redirect_url) {
+            $loginUrl .= (Str::contains($loginUrl, '?') ? '&' : '?') . http_build_query(compact('r'));
+        }
+
+        return $loginUrl;
     }
 
     /**
