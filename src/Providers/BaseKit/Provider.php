@@ -149,9 +149,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getAccountInfo($userReference, string $domainName): AccountInfo
+    public function getAccountInfo($userReference, ?string $domainName = null): AccountInfo
     {
         $userData = $this->getUserData($userReference);
         $packageRef = $userData->subscriptionPackageRef;
@@ -159,6 +159,10 @@ class Provider extends Category implements ProviderInterface
 
         $sitesData = $this->getUserSitesData($userReference);
         $numSites = count($sitesData);
+
+        if (is_null($domainName)) {
+            $domainName = $sitesData[0]->primaryDomain->domainName ?? null;
+        }
 
         return AccountInfo::create([
             'account_reference' => $userReference,
@@ -260,9 +264,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getLoginUrl($userReference, string $domainName): string
+    public function getLoginUrl($userReference, ?string $domainName = null): string
     {
         $response = $this->client()->post(sprintf('/users/%s/auto-login', $userReference), [
             RequestOptions::JSON => [
@@ -283,14 +287,14 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
      */
-    public function getDomainSiteReference($userReference, string $domainName): int
+    public function getDomainSiteReference($userReference, ?string $domainName = null): int
     {
         $sitesData = $this->getUserSitesData($userReference);
 
         foreach ($sitesData as $site) {
-            if (strcasecmp($domainName, $site->primaryDomain->domainName) === 0) {
+            if ($domainName && strcasecmp($domainName, $site->primaryDomain->domainName) === 0) {
                 return $site->ref;
             }
         }
