@@ -54,12 +54,12 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             $userRef = $this->createUser($params);
-            $this->createWebsite($userRef, $params->domain_name);
+            $domainName = $this->createWebsite($userRef, $params->domain_name);
             $this->setUserPackage($userRef, $params->package_reference, $params->billing_cycle_months);
 
             return new AccountInfo([
                 'account_reference' => $userRef,
-                'domain_name' => $params->domain_name,
+                'domain_name' => $domainName,
                 'package_reference' => $params->package_reference,
                 'suspended' => $params->package_reference == $this->configuration->suspension_package_ref,
                 'site_count' => 1,
@@ -225,20 +225,22 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string $domainName
+     * @param string|null $domainName
+     *
+     * @return string Website domain name
      */
-    public function createWebsite($userReference, string $domainName): int
+    public function createWebsite($userReference, ?string $domainName = null): string
     {
         $response = $this->client()->post('/sites', [
-            RequestOptions::JSON => [
+            RequestOptions::JSON => array_filter([
                 'brandRef' => $this->configuration->brand_ref,
                 'accountHolderRef' => $userReference,
                 'domain' => $domainName,
-                // 'subdomain' => str_replace('.', '-', $domainName)
-            ],
+                'createDemoDomain' => empty($domainName),
+            ]),
         ]);
 
-        return $this->getResponseData($response)->site->ref; // site ref
+        return $this->getResponseData($response)->site->primaryDomain->domainName;
     }
 
     /**
