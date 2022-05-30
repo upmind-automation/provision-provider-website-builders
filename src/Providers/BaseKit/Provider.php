@@ -275,14 +275,10 @@ class Provider extends Category implements ProviderInterface
         ]);
         $data = $this->getResponseData($response);
 
-        if (!empty($data->flowUrl)) {
-            return $data->flowUrl;
-        }
+        $r = $this->configuration->auto_login_redirect_url;
 
-        $hash = $data->hash;
-
-        return Str::replaceFirst('rest', 'flow', $this->configuration->api_url)
-            . '/login?' . http_build_query(compact('hash'));
+        $join = Str::contains($data->flowUrl, '?') ? '&' : '?';
+        return $data->flowUrl . $join . http_build_query(compact('r'));
     }
 
     /**
