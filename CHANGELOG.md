@@ -2,6 +2,9 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.0.1 - 2022-05-30
+
+Rename Helpers util file
 ## v2.0 - 2022-05-10
 
 Initial public release
