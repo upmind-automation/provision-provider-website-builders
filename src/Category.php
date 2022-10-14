@@ -24,7 +24,8 @@ abstract class Category extends BaseCategory
     {
         return AboutData::create()
             ->setName('Website Builders')
-            ->setDescription('Provision category for managing accounts of website builder services');
+            ->setDescription('Provision category for managing accounts of website builder services')
+            ->setIcon('paint brush');
     }
 
     /**

@@ -43,7 +43,8 @@ class Provider extends Category implements ProviderInterface, LogsDebugData
     {
         return AboutData::create()
             ->setName('BaseKit')
-            ->setDescription('Create, manage and log into BaseKit site builder accounts');
+            ->setDescription('Create, manage and log into BaseKit site builder accounts')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/basekit-logo@2x.png');
     }
 
     public function __construct(Configuration $configuration)
