@@ -34,47 +34,9 @@ This library makes use of [upmind/provision-provider-base](https://packagist.org
 
 ### Quick-start
 
-See the below example to create a cPanel account:
+The easiest way to see this provision category in action and to develop/test changes is to install it in [upmind/provision-workbench](https://github.com/upmind-automation/provision-workbench#readme).
 
-```php
-<?php
-
-use Illuminate\Support\Facades\App;
-use Upmind\ProvisionBase\ProviderFactory;
-
-$configuration = [
-    'api_url' => 'https://rest.bk-partnersus.com/',
-    'username' => '{username}',
-    'password' => '{password}',
-    'brand_ref' => '{brand ref}',
-    'suspension_package_ref' => '{suspension package ref}',
-];
-
-$factory = App::make(ProviderFactory::class);
-$provider = $factory->create('website-builders', 'base-kit', $configuration);
-
-$createParameters = [
-    'customer_id' => '1234',
-    'customer_name' => 'Harry L',
-    'customer_email' => 'harry@upmind.com',
-    'domain_name' => 'example.com',
-    'package_reference' => '2345',
-    'billing_cycle_months' => 12, // annual billing cycle
-];
-$function = $provider->makeJob('create', $createParameters);
-
-$createResult = $function->execute();
-
-if ($createResult->isError()) {
-    throw new RuntimeException($createResult->getMessage(), 0, $createResult->getException());
-}
-
-/** @var \Upmind\ProvisionProviders\WebsiteBuilders\Data\AccountInfo */
-$accountInfo = $createResult->getData();
-
-// $accountInfo->account_reference; // username/identifier of the created site builder account
-// ...
-```
+Alternatively you can start using it for your business immediately with [Upmind.com](https://upmind.com/start) - the ultimate web hosting billing and management solution.
 
 ## Supported Providers
 
