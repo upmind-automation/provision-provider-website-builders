@@ -219,9 +219,9 @@ class Provider extends Category implements ProviderInterface
                 'firstName' => $firstName,
                 'lastName' => $lastName ?? 'UNKNOWN',
                 'languageCode' => $params->language_code ?? 'en',
-                'metadata' => [
+                'metadata' => array_merge($params->extra ?? [], [
                     'upmind_client_id' => $params->customer_id,
-                ]
+                ])
             ],
         ]);
 
