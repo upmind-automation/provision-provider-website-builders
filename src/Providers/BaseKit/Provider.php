@@ -56,7 +56,7 @@ class Provider extends Category implements ProviderInterface
         try {
             $userRef = $this->createUser($params);
             $domainName = $this->createWebsite($userRef, $params->domain_name);
-            $this->setUserPackage($userRef, $params->package_reference, $params->billing_cycle_months);
+            $this->setUserPackage($userRef, $params->package_reference, intval($params->billing_cycle_months));
 
             return new AccountInfo([
                 'account_reference' => $userRef,
