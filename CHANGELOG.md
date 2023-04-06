@@ -2,6 +2,12 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.0 - 2023-04-06
+
+- Fix: BaseKit createUser() add language code fall-back
+- Fix: BaseKit create() explicitly cast billing_cycle_months to int
+- NEW: Add optional `extra` array to CreateParams, send as metadata in BaseKit createUser()
+
 ## v2.2.1 - 2022-10-18
 
 - Fix BaseKit provider to not implement LogsDebugData twice
