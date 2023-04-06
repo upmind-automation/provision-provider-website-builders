@@ -218,7 +218,7 @@ class Provider extends Category implements ProviderInterface
                 'password' => $params->password ?? $this->getRandomPassword(),
                 'firstName' => $firstName,
                 'lastName' => $lastName ?? 'UNKNOWN',
-                'languageCode' => $params->language_code,
+                'languageCode' => $params->language_code ?? 'en',
                 'metadata' => [
                     'upmind_client_id' => $params->customer_id,
                 ]
