@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.1 - 2023-04-17
+
+- Return `extra` array in AccountInfo after create()
+
 ## v2.3.0 - 2023-04-06
 
 - Fix: BaseKit createUser() add language code fall-back

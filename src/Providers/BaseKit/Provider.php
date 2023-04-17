@@ -65,6 +65,7 @@ class Provider extends Category implements ProviderInterface
                 'suspended' => $params->package_reference == $this->configuration->suspension_package_ref,
                 'site_count' => 1,
                 'storage_used' => Helpers::humanReadableFileSize(0),
+                'extra' => $params->extra,
             ]);
         } catch (Throwable $e) {
             $this->handleException($e);
