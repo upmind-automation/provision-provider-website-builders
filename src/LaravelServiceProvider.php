@@ -7,7 +7,7 @@ namespace Upmind\ProvisionProviders\WebsiteBuilders;
 use Upmind\ProvisionBase\Laravel\ProvisionServiceProvider;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Example\Provider as Example;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\BaseKit\Provider as BaseKit;
-
+use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Websitecom\Provider as Websitecom;
 class LaravelServiceProvider extends ProvisionServiceProvider
 {
     public function boot()
@@ -17,5 +17,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         // $this->bindProvider('website-builders', 'example', Example::class);
 
         $this->bindProvider('website-builders', 'base-kit', BaseKit::class);
+        $this->bindProvider('website-builders', 'websitecom', Websitecom::class);
     }
 }
