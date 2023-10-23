@@ -151,7 +151,11 @@ class Provider extends Category implements ProviderInterface
                 $body = trim($response->getBody()->__toString());
                 $responseData = json_decode($body, true);
 
-                $errorMessage = $responseData['message'] ?? 'unknown error';
+                $errorMessage = $responseData['message'] ?? $response->getReasonPhrase();
+
+                if (is_null($responseData) && Str::contains($body, 'cloudflare')) {
+                    $errorMessage .= ' - check whitelisted IPs';
+                }
 
                 throw $this->errorResult(
                     sprintf('Provider API Error: %s', $errorMessage),
@@ -171,7 +175,7 @@ class Provider extends Category implements ProviderInterface
             return $this->api;
         }
 
-        $client = $this->client = new Client([
+        $client = new Client([
             'base_uri' => 'https://api.websiteserver.cloud/site-builder/v1de/',
             RequestOptions::HEADERS => [
                 'User-Agent' => 'upmind/provision-provider-website-builders v1.0',
