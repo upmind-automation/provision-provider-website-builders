@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.4.0 - TBC
+
+- Implement Website.com provider
+
 ## v2.3.1 - 2023-04-17
 
 - Return `extra` array in AccountInfo after create()

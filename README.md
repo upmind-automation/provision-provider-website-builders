@@ -43,7 +43,8 @@ Alternatively you can start using it for your business immediately with [Upmind.
 ## Supported Providers
 
 The following providers are currently implemented:
-  - BaseKit
+  - [BaseKit](https://apidocs.basekit.com/api/integration-guide/#api-method-overview)
+  - [Website.com](https://www.website.com/)
 
 ## Functions
 
@@ -86,6 +87,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 ## Credits
 
  - [Harry Lewis](https://github.com/uphlewis)
+ - [Codeline](https://github.com/CodelineNL)
  - [All Contributors](../../contributors)
 
 ## License
