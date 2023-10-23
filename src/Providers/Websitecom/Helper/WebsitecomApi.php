@@ -81,7 +81,7 @@ class WebsitecomApi
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
 
         $body = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $params->customer_id,
             'domainName' => $params->domain_name,
             'planId' => $params->package_reference,
             'email' => $params->customer_email,
