@@ -76,12 +76,12 @@ class WebsitecomApi
         return $errorMessage ?? null;
     }
 
-    public function createUser(CreateParams $params): string
+    public function createUser(CreateParams $params): array
     {
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
 
         $body = [
-            'clientId' => $params->customer_id,
+            'clientId' => $params->site_builder_user_id,
             'domainName' => $params->domain_name,
             'planId' => $params->package_reference,
             'email' => $params->customer_email,
@@ -91,13 +91,16 @@ class WebsitecomApi
 
         $response = $this->makeRequest("create", null, $body, 'POST');
 
-        return (string)$response['data']['userGuid'];
+        return [
+            (string)$response['data']['clientId'] ?? $params->site_builder_user_id,
+            (string)$response['data']['userGuid']
+        ];
     }
 
-    public function getInfo(string $id): array
+    public function getInfo(int $siteBuilderUserId, string $id): array
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
         ];
 
@@ -111,40 +114,40 @@ class WebsitecomApi
         ];
     }
 
-    public function suspend(string $id): void
+    public function suspend(int $siteBuilderUserId, string $id): void
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
         ];
 
         $this->makeRequest("suspend", $query);
     }
 
-    public function unsuspend(string $id): void
+    public function unsuspend(int $siteBuilderUserId, string $id): void
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
         ];
 
         $this->makeRequest("unsuspend", $query);
     }
 
-    public function terminate(string $id): void
+    public function terminate(int $siteBuilderUserId, string $id): void
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
         ];
 
         $this->makeRequest("terminate", $query);
     }
 
-    public function changePackage(string $id, string $packageId): void
+    public function changePackage(int $siteBuilderUserId, string $id, string $packageId): void
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
             'planId' => $packageId,
         ];
@@ -152,10 +155,10 @@ class WebsitecomApi
         $this->makeRequest("changePackage", $query);
     }
 
-    public function login(string $id): string
+    public function login(int $siteBuilderUserId, string $id): string
     {
         $query = [
-            'clientId' => $this->configuration->client_id,
+            'clientId' => $siteBuilderUserId,
             'userGuid' => $id,
         ];
 

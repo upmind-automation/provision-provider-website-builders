@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Str;
+use Throwable;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -52,9 +53,9 @@ class Provider extends Category implements ProviderInterface
         }
 
         try {
-            $userRef = $this->api()->createUser($params);
+            [$clientId, $userRef] = $this->api()->createUser($params);
 
-            return $this->_getInfo($userRef, 'Account data obtained');
+            return $this->_getInfo($clientId, $userRef, 'Account data obtained');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -64,15 +65,15 @@ class Provider extends Category implements ProviderInterface
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
-            return $this->_getInfo($params->account_reference, 'Account data obtained');
+            return $this->_getInfo((int)$params->site_builder_user_id, $params->account_reference, 'Account data obtained');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
     }
 
-    private function _getInfo(string $id, string $message): AccountInfo
+    private function _getInfo(int $siteBuilderUserId, string $id, string $message): AccountInfo
     {
-        $accountInfo = $this->api()->getInfo($id);
+        $accountInfo = $this->api()->getInfo($siteBuilderUserId, $id);
 
         return AccountInfo::create($accountInfo)->setMessage($message);
     }
@@ -81,7 +82,7 @@ class Provider extends Category implements ProviderInterface
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
-            $url = $this->api()->login($params->account_reference);
+            $url = $this->api()->login((int)$params->site_builder_user_id, $params->account_reference);
 
             return new LoginResult(['login_url' => $url]);
         } catch (Throwable $e) {
@@ -93,9 +94,9 @@ class Provider extends Category implements ProviderInterface
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
-            $this->api()->changePackage($params->account_reference, $params->package_reference);
+            $this->api()->changePackage((int)$params->site_builder_user_id, $params->account_reference, $params->package_reference);
 
-            return $this->_getInfo($params->account_reference, 'Package changed');
+            return $this->_getInfo((int)$params->site_builder_user_id, $params->account_reference, 'Package changed');
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -105,9 +106,9 @@ class Provider extends Category implements ProviderInterface
     public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
-            $this->api()->suspend($params->account_reference);
+            $this->api()->suspend((int)$params->site_builder_user_id, $params->account_reference);
 
-            return $this->_getInfo($params->account_reference, 'Account suspended');
+            return $this->_getInfo((int)$params->site_builder_user_id, $params->account_reference, 'Account suspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -116,11 +117,9 @@ class Provider extends Category implements ProviderInterface
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
-            $this->api()->unsuspend($params->account_reference);
+            $this->api()->unsuspend((int)$params->site_builder_user_id, $params->account_reference);
 
-            $this->api()->changePackage($params->account_reference, $params->package_reference);
-
-            return $this->_getInfo($params->account_reference, 'Account unsuspended');
+            return $this->_getInfo((int)$params->site_builder_user_id, $params->account_reference, 'Account unsuspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -130,7 +129,7 @@ class Provider extends Category implements ProviderInterface
     public function terminate(AccountIdentifier $params): ResultData
     {
         try {
-            $this->api()->terminate($params->account_reference);
+            $this->api()->terminate((int)$params->site_builder_user_id, $params->account_reference);
 
             return $this->okResult('Account Terminated');
         } catch (Throwable $e) {
