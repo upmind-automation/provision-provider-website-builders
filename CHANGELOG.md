@@ -4,6 +4,7 @@ All notable changes to the package will be documented in this file.
 
 ## v2.4.0 - TBC
 
+- Add `site_builder_user_id` parameter and return value for create and subsequent function calls
 - Implement Website.com provider
 
 ## v2.3.1 - 2023-04-17

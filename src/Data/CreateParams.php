@@ -8,6 +8,7 @@ use Upmind\ProvisionBase\Provider\DataSet\DataSet;
 use Upmind\ProvisionBase\Provider\DataSet\Rules;
 
 /**
+ * @property-read string|integer|null $site_builder_user_id
  * @property-read string|integer $customer_id
  * @property-read string $customer_name
  * @property-read string $customer_email
@@ -23,6 +24,7 @@ class CreateParams extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
+            'site_builder_user_id' => ['nullable'],
             'customer_id' => ['required'],
             'customer_name' => ['required', 'string'],
             'customer_email' => ['required', 'email'],
