@@ -45,7 +45,6 @@ class Provider extends Category implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/websitecom-logo@2x.png');
     }
 
-
     public function create(CreateParams $params): AccountInfo
     {
         if (!isset($params->domain_name)) {
@@ -60,7 +59,6 @@ class Provider extends Category implements ProviderInterface
             $this->handleException($e, $params);
         }
     }
-
 
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
@@ -78,7 +76,6 @@ class Provider extends Category implements ProviderInterface
         return AccountInfo::create($accountInfo)->setMessage($message);
     }
 
-
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
@@ -90,7 +87,6 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
-
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
@@ -101,7 +97,6 @@ class Provider extends Category implements ProviderInterface
             $this->handleException($e);
         }
     }
-
 
     public function suspend(AccountIdentifier $params): AccountInfo
     {
@@ -124,7 +119,6 @@ class Provider extends Category implements ProviderInterface
             $this->handleException($e, $params);
         }
     }
-
 
     public function terminate(AccountIdentifier $params): ResultData
     {

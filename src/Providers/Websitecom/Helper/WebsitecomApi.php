@@ -9,7 +9,6 @@ use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
 class WebsitecomApi
 {
-
     protected Client $client;
 
     protected Configuration $configuration;
