@@ -76,6 +76,9 @@ class WebsitecomApi
         return $errorMessage ?? null;
     }
 
+    /**
+     * @return array [(int)site_builder_user_id, (string)account_reference]
+     */
     public function createUser(CreateParams $params): array
     {
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
@@ -92,7 +95,7 @@ class WebsitecomApi
         $response = $this->makeRequest("create", null, $body, 'POST');
 
         return [
-            (string)$response['data']['clientId'] ?? $params->site_builder_user_id,
+            (int)$response['data']['clientId'] ?? $params->site_builder_user_id,
             (string)$response['data']['userGuid']
         ];
     }
@@ -107,6 +110,7 @@ class WebsitecomApi
         $response = $this->makeRequest("getInfo", $query);
 
         return [
+            'site_builder_user_id' => $siteBuilderUserId,
             'account_reference' => (string)$response['data']['userGuid'],
             'domain_name' => $response['data']['siteDomain'],
             'package_reference' => $response['data']['planId'],
