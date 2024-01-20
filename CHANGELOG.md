@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.4.1 - 2024-01-20
+
+- Fix website.com undefined clientId index errors
+
 ## v2.4.0 - 2023-10-27
 
 - Add `site_builder_user_id` parameter and return value for create and subsequent function calls
