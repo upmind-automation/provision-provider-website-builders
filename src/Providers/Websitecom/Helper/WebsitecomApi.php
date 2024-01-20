@@ -94,12 +94,12 @@ class WebsitecomApi
         $response = $this->makeRequest("create", null, $body, 'POST');
 
         return [
-            (int)$response['data']['clientId'] ?? $params->site_builder_user_id,
+            (int)($response['data']['clientId'] ?? $params->site_builder_user_id) ?: null,
             (string)$response['data']['userGuid']
         ];
     }
 
-    public function getInfo(int $siteBuilderUserId, string $id): array
+    public function getInfo(?int $siteBuilderUserId, string $id): array
     {
         $query = [
             'clientId' => $siteBuilderUserId,

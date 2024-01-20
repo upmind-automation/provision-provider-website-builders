@@ -69,9 +69,12 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
-    private function _getInfo(int $siteBuilderUserId, string $id, string $message): AccountInfo
+    private function _getInfo(?int $siteBuilderUserId, string $id, string $message): AccountInfo
     {
         $accountInfo = $this->api()->getInfo($siteBuilderUserId, $id);
+        if (empty($accountInfo['site_builder_user_id'])) {
+            $accountInfo['site_builder_user_id'] = null;
+        }
 
         return AccountInfo::create($accountInfo)->setMessage($message);
     }
