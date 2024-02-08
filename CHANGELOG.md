@@ -2,6 +2,13 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.5.0 - 2024-02-08
+
+- Add new result data fields for website.com
+  - `ip_address`
+  - `is_published`
+  - `has_ssl`
+
 ## v2.4.1 - 2024-01-20
 
 - Fix website.com undefined clientId index errors
