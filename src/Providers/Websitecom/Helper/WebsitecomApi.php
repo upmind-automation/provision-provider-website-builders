@@ -114,6 +114,9 @@ class WebsitecomApi
             'domain_name' => $response['data']['siteDomain'],
             'package_reference' => $response['data']['planId'],
             'suspended' => $response['data']['userStatus'] == 'S',
+            'ip_address' => $response['data']['ip'],
+            'is_published' => $response['data']['isPublished'],
+            'has_ssl' => $response['data']['isSslOn'],
         ];
     }
 

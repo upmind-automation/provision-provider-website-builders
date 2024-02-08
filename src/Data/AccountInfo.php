@@ -15,6 +15,9 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read bool $suspended
  * @property-read integer|null $site_count
  * @property-read string|null $storage_used
+ * @property-read string|null $ip_address
+ * @property-read bool|null $is_published
+ * @property-read bool|null $has_ssl
  * @property-read array|null $extra
  */
 class AccountInfo extends ResultData
@@ -29,6 +32,9 @@ class AccountInfo extends ResultData
             'suspended' => ['nullable', 'bool'],
             'site_count' => ['nullable', 'integer'],
             'storage_used' => ['nullable', 'string'],
+            'ip_address' => ['nullable', 'ip'],
+            'is_published' => ['nullable', 'bool'],
+            'has_ssl' => ['nullable', 'bool'],
             'extra' => ['nullable', 'array'],
         ]);
     }
