@@ -181,7 +181,7 @@ class Provider extends Category implements ProviderInterface
             ],
             RequestOptions::TIMEOUT => 10, // seconds
             RequestOptions::CONNECT_TIMEOUT => 5, // seconds
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug))
+            'handler' => $this->getGuzzleHandlerStack()
         ]);
 
         return $this->api = new WebsitecomApi($client, $this->configuration);

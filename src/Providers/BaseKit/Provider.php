@@ -423,7 +423,7 @@ class Provider extends Category implements ProviderInterface
             ],
             RequestOptions::TIMEOUT => 10, // seconds
             RequestOptions::CONNECT_TIMEOUT => 5, // seconds
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug_mode))
+            'handler' => $this->getGuzzleHandlerStack()
         ]);
     }
 }
