@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Websitecom;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Str;
@@ -48,7 +47,7 @@ class Provider extends Category implements ProviderInterface
     public function create(CreateParams $params): AccountInfo
     {
         if (!isset($params->domain_name)) {
-            throw $this->errorResult('Domain name is required!');
+            $this->errorResult('Domain name is required!');
         }
 
         try {
@@ -136,30 +135,29 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @return no-return
-     * @throws ProvisionFunctionError
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function handleException(\Throwable $e, $params = null): void
     {
-        if ($e instanceof RequestException) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
+        if (($e instanceof RequestException) && $e->hasResponse()) {
+            $response = $e->getResponse();
 
-                $body = trim($response->getBody()->__toString());
-                $responseData = json_decode($body, true);
+            $body = trim($response === null ? '' : $response->getBody()->__toString());
+            $responseData = json_decode($body, true);
 
-                $errorMessage = $responseData['message'] ?? $response->getReasonPhrase();
+            $errorMessage = $responseData['message'] ?? $response->getReasonPhrase();
 
-                if (is_null($responseData) && Str::contains($body, 'cloudflare')) {
-                    $errorMessage .= ' - check whitelisted IPs';
-                }
-
-                throw $this->errorResult(
-                    sprintf('Provider API Error: %s', $errorMessage),
-                    ['response_data' => $responseData],
-                    [],
-                    $e
-                );
+            if (is_null($responseData) && Str::contains($body, 'cloudflare')) {
+                $errorMessage .= ' - check whitelisted IPs';
             }
+
+            $this->errorResult(
+                sprintf('Provider API Error: %s', $errorMessage),
+                ['response_data' => $responseData],
+                [],
+                $e
+            );
         }
 
         throw $e;
