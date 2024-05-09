@@ -21,7 +21,7 @@ class Helpers
         }
 
         $size = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-        $factor = floor((strlen((string)$bytes) - 1) / 3);
+        $factor = (int) floor((strlen((string)$bytes) - 1) / 3);
 
         if ($factor === 0 || $decimals < 0) {
             $decimals = 0;
