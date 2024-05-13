@@ -402,50 +402,48 @@ class Provider extends Category implements ProviderInterface
      */
     public function handleException(Throwable $e): void
     {
-        if ($e instanceof RequestException) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                $httpCode = $response->getStatusCode();
-                $data = $this->getResponseData($response);
+        if (($e instanceof RequestException) && $e->hasResponse()) {
+            $response = $e->getResponse();
+            $httpCode = $response->getStatusCode();
+            $data = $this->getResponseData($response);
 
-                $statusCode = $data->status ?? $data->code ?? $httpCode;
-                if (!preg_match('/^2\d\d$/', strval($statusCode))) {
-                    // an error occurred!
-                    $message = $data->message;
+            $statusCode = $data->status ?? $data->code ?? $httpCode;
+            if (!preg_match('/^2\d\d$/', strval($statusCode))) {
+                // an error occurred!
+                $message = $data->message;
 
-                    if (!empty($data->errors)) {
-                        $errorMessages = [];
-                        foreach ($data->errors as $property => $errors) {
-                            foreach ($errors as $type => $errorMessage) {
-                                $errorMessages[] = $errorMessage;
-                            }
-                        }
-
-                        if ($errorMessages) {
-                            $message .= '; ' . implode(', ', $errorMessages);
+                if (!empty($data->errors)) {
+                    $errorMessages = [];
+                    foreach ($data->errors as $property => $errors) {
+                        foreach ($errors as $type => $errorMessage) {
+                            $errorMessages[] = $errorMessage;
                         }
                     }
 
-                    $this->errorResult(
-                        'Provider API Error: ' . $message,
-                        [
-                            'status_code' => $statusCode,
-                            'errors' => $data->errors ?? [],
-                        ],
-                        ['response_data' => $data],
-                        $e
-                    );
+                    if ($errorMessages) {
+                        $message .= '; ' . implode(', ', $errorMessages);
+                    }
                 }
-
-                $message = $httpCode . ' ' . $response->getReasonPhrase();
 
                 $this->errorResult(
                     'Provider API Error: ' . $message,
-                    ['status_code' => $statusCode],
+                    [
+                        'status_code' => $statusCode,
+                        'errors' => $data->errors ?? [],
+                    ],
                     ['response_data' => $data],
                     $e
                 );
             }
+
+            $message = $httpCode . ' ' . $response->getReasonPhrase();
+
+            $this->errorResult(
+                'Provider API Error: ' . $message,
+                ['status_code' => $statusCode],
+                ['response_data' => $data],
+                $e
+            );
         }
 
         if ($e instanceof ConnectException) {
