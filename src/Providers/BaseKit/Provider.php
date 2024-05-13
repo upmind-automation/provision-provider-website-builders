@@ -437,10 +437,8 @@ class Provider extends Category implements ProviderInterface
                 );
             }
 
-            $message = $httpCode . ' ' . $response->getReasonPhrase();
-
             $this->errorResult(
-                'Provider API Error: ' . $message,
+                'Provider API Error: ' . $httpCode . ' ' . $response->getReasonPhrase(),
                 ['status_code' => $statusCode],
                 ['response_data' => $data],
                 $e
