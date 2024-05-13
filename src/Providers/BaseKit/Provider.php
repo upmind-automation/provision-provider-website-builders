@@ -50,6 +50,10 @@ class Provider extends Category implements ProviderInterface
         $this->configuration = $configuration;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function create(CreateParams $params): AccountInfo
     {
         try {
@@ -71,6 +75,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
@@ -84,6 +92,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -93,6 +105,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
@@ -108,6 +124,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -122,6 +142,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
@@ -137,6 +161,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function terminate(AccountIdentifier $params): ResultData
     {
         try {
@@ -149,8 +177,7 @@ class Provider extends Category implements ProviderInterface
     }
 
     /**
-     * @param int $userReference
-     * @param string|null $domainName
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getAccountInfo($userReference, ?string $domainName = null): AccountInfo
     {
@@ -178,7 +205,6 @@ class Provider extends Category implements ProviderInterface
     /**
      * @param int $userReference
      *
-     * @return stdClass
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -209,6 +235,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * Create a user and return the new user account reference.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     public function createUser(CreateParams $params): int
     {
@@ -277,7 +306,6 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string|null $domainName
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -321,6 +349,9 @@ class Provider extends Category implements ProviderInterface
         return $sitesData[0]->ref;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function terminateUser($userReference): void
     {
         // suspend
@@ -338,16 +369,13 @@ class Provider extends Category implements ProviderInterface
         $this->client()->delete('/users/' . $userReference);
     }
 
-    /**
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
-     */
     public function getResponseData(ResponseInterface $response): stdClass
     {
         return json_decode($response->getBody()->__toString());
     }
 
     /**
-     * @throws \Random\RandomException
+     * @throws \Exception (\RandomException\RandomException from PHP version 8.2 onwards)
      */
     public function getRandomPassword(): string
     {
