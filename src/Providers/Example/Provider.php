@@ -23,7 +23,7 @@ use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Example\Data\Configurati
 class Provider extends Category implements ProviderInterface
 {
     protected Configuration $configuration;
-    protected Client $client;
+    protected Client|null $client = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -43,58 +43,72 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function create(CreateParams $params): AccountInfo
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function login(AccountIdentifier $params): LoginResult
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function suspend(AccountIdentifier $params): AccountInfo
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function terminate(AccountIdentifier $params): ResultData
     {
-        throw $this->errorResult('Not Implemented');
+        $this->errorResult('Not Implemented');
     }
 
     /**

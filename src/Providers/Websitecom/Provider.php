@@ -29,7 +29,7 @@ class Provider extends Category implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected WebsitecomApi $api;
+    protected WebsitecomApi|null $api = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -44,6 +44,10 @@ class Provider extends Category implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/websitecom-logo@2x.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function create(CreateParams $params): AccountInfo
     {
         if (!isset($params->domain_name)) {
@@ -59,6 +63,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -68,6 +76,9 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     private function _getInfo(?int $siteBuilderUserId, string $id, string $message): AccountInfo
     {
         $accountInfo = $this->api()->getInfo($siteBuilderUserId, $id);
@@ -78,6 +89,10 @@ class Provider extends Category implements ProviderInterface
         return AccountInfo::create($accountInfo)->setMessage($message);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
@@ -89,6 +104,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
@@ -100,6 +119,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -111,6 +134,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
@@ -122,6 +149,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function terminate(AccountIdentifier $params): ResultData
     {
         try {
@@ -135,8 +166,9 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @return no-return
-     * @throws \Throwable
+     *
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function handleException(\Throwable $e, $params = null): void
     {
