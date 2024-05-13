@@ -2,12 +2,11 @@ version: '3.3'
 services:
 
   #PHP Service
-  app:
+  provision-provider-website-builders:
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
-    container_name: app
-    restart: unless-stopped
+    container_name: provision-provider-website-builders
     tty: true
     environment:
       SERVICE_NAME: app
@@ -16,9 +15,9 @@ services:
     volumes:
       - ./:/usr/src/lib
     networks:
-      - app-network
+      - provision-provider-website-builders-network
 
 #Docker Networks
 networks:
-  app-network:
+  provision-provider-website-builders-network:
     driver: bridge
