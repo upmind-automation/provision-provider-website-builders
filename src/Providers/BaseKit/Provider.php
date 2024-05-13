@@ -403,6 +403,7 @@ class Provider extends Category implements ProviderInterface
     public function handleException(Throwable $e): void
     {
         if (($e instanceof RequestException) && $e->hasResponse()) {
+            /** @var \Psr\Http\Message\ResponseInterface $response response not null evaluated at this point */
             $response = $e->getResponse();
             $httpCode = $response->getStatusCode();
             $data = $this->getResponseData($response);
