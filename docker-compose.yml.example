@@ -9,7 +9,7 @@ services:
     container_name: provision-provider-website-builders
     tty: true
     environment:
-      SERVICE_NAME: app
+      SERVICE_NAME: provision-provider-website-builders
       SERVICE_TAGS: dev
     working_dir: /usr/src/lib
     volumes:
