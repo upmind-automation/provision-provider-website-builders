@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.6.0 - 2024-05-15
+
+- Update for PHP 8.1+ and base library v4
+- Add static analyser and docker environment
+
 ## v2.5.0 - 2024-02-08
 
 - Add new result data fields for website.com
