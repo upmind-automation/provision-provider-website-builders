@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use Throwable;
-use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -34,7 +33,7 @@ class Provider extends Category implements ProviderInterface
     protected $configuration;
 
     /**
-     * @var Client
+     * @var Client|null
      */
     protected $client;
 
@@ -51,6 +50,10 @@ class Provider extends Category implements ProviderInterface
         $this->configuration = $configuration;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function create(CreateParams $params): AccountInfo
     {
         try {
@@ -72,6 +75,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
@@ -85,6 +92,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -94,6 +105,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
@@ -109,6 +124,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -123,6 +142,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
@@ -138,6 +161,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function terminate(AccountIdentifier $params): ResultData
     {
         try {
@@ -150,8 +177,7 @@ class Provider extends Category implements ProviderInterface
     }
 
     /**
-     * @param int $userReference
-     * @param string|null $domainName
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getAccountInfo($userReference, ?string $domainName = null): AccountInfo
     {
@@ -179,7 +205,8 @@ class Provider extends Category implements ProviderInterface
     /**
      * @param int $userReference
      *
-     * @return stdClass
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getUserData($userReference): stdClass
     {
@@ -187,7 +214,7 @@ class Provider extends Category implements ProviderInterface
         $userData = $this->getResponseData($response)->accountHolder;
 
         if ($userData->deleted) {
-            throw $this->errorResult('User is deleted', [], ['user_data' => $userData]);
+            $this->errorResult('User is deleted', [], ['user_data' => $userData]);
         }
 
         return $userData;
@@ -197,6 +224,8 @@ class Provider extends Category implements ProviderInterface
      * @param int $userReference
      *
      * @return stdClass[]
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getUserSitesData($userReference): array
     {
@@ -206,11 +235,18 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * Create a user and return the new user account reference.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     public function createUser(CreateParams $params): int
     {
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
 
+        /**
+         * @var string $firstName
+         * @var string|null $lastName
+         */
         $response = $this->client()->post('/users', [
             RequestOptions::JSON => [
                 'brandRef' => $this->configuration->brand_ref,
@@ -234,6 +270,8 @@ class Provider extends Category implements ProviderInterface
      * @param string|null $domainName
      *
      * @return string Website domain name
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createWebsite($userReference, ?string $domainName = null): string
     {
@@ -253,6 +291,8 @@ class Provider extends Category implements ProviderInterface
      * @param int $userReference
      * @param int $packageReference
      * @param int|null $billingCycleMonths
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function setUserPackage($userReference, $packageReference, ?int $billingCycleMonths = null)
     {
@@ -266,7 +306,8 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string|null $domainName
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getLoginUrl($userReference, ?string $domainName = null): string
     {
@@ -288,7 +329,8 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @param int $userReference
-     * @param string|null $domainName
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getDomainSiteReference($userReference, ?string $domainName = null): int
     {
@@ -300,9 +342,16 @@ class Provider extends Category implements ProviderInterface
             }
         }
 
-        return $sitesData[0]->ref ?? $this->errorResult('User has no sites to login to');
+        if (!isset($sitesData[0]->ref)) {
+            $this->errorResult('User has no sites to login to');
+        }
+
+        return $sitesData[0]->ref;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function terminateUser($userReference): void
     {
         // suspend
@@ -320,14 +369,14 @@ class Provider extends Category implements ProviderInterface
         $this->client()->delete('/users/' . $userReference);
     }
 
-    /**
-     * @throws ProvisionFunctionError
-     */
     public function getResponseData(ResponseInterface $response): stdClass
     {
         return json_decode($response->getBody()->__toString());
     }
 
+    /**
+     * @throws \Exception (\RandomException\RandomException from PHP version 8.2 onwards)
+     */
     public function getRandomPassword(): string
     {
         return bin2hex(random_bytes(20));
@@ -336,8 +385,6 @@ class Provider extends Category implements ProviderInterface
     /**
      * @param string $firstName
      * @param string|null $lastName
-     *
-     * @return string
      */
     public function getRandomUsername($firstName, $lastName): string
     {
@@ -350,58 +397,56 @@ class Provider extends Category implements ProviderInterface
     /**
      * @return no-return
      *
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     public function handleException(Throwable $e): void
     {
-        if ($e instanceof RequestException) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                $httpCode = $response->getStatusCode();
-                $data = $this->getResponseData($response);
+        if (($e instanceof RequestException) && $e->hasResponse()) {
+            /** @var \Psr\Http\Message\ResponseInterface $response response not null evaluated at this point */
+            $response = $e->getResponse();
+            $httpCode = $response->getStatusCode();
+            $data = $this->getResponseData($response);
 
-                $statusCode = $data->status ?? $data->code ?? $httpCode;
-                if (!preg_match('/^2\d\d$/', strval($statusCode))) {
-                    // an error occurred!
-                    $message = $data->message;
+            $statusCode = $data->status ?? $data->code ?? $httpCode;
+            if (!preg_match('/^2\d\d$/', strval($statusCode))) {
+                // an error occurred!
+                $message = $data->message;
 
-                    if (!empty($data->errors)) {
-                        $errorMessages = [];
-                        foreach ($data->errors as $property => $errors) {
-                            foreach ($errors as $type => $errorMessage) {
-                                $errorMessages[] = $errorMessage;
-                            }
-                        }
-
-                        if ($errorMessages) {
-                            $message .= '; ' . implode(', ', $errorMessages);
+                if (!empty($data->errors)) {
+                    $errorMessages = [];
+                    foreach ($data->errors as $property => $errors) {
+                        foreach ($errors as $type => $errorMessage) {
+                            $errorMessages[] = $errorMessage;
                         }
                     }
 
-                    throw $this->errorResult(
-                        'Provider API Error: ' . $message,
-                        [
-                            'status_code' => $statusCode,
-                            'errors' => $data->errors ?? [],
-                        ],
-                        ['response_data' => $data],
-                        $e
-                    );
+                    if ($errorMessages) {
+                        $message .= '; ' . implode(', ', $errorMessages);
+                    }
                 }
 
-                $message = $httpCode . ' ' . $response->getReasonPhrase();
-
-                throw $this->errorResult(
+                $this->errorResult(
                     'Provider API Error: ' . $message,
-                    ['status_code' => $statusCode],
+                    [
+                        'status_code' => $statusCode,
+                        'errors' => $data->errors ?? [],
+                    ],
                     ['response_data' => $data],
                     $e
                 );
             }
+
+            $this->errorResult(
+                'Provider API Error: ' . $httpCode . ' ' . $response->getReasonPhrase(),
+                ['status_code' => $statusCode],
+                ['response_data' => $data],
+                $e
+            );
         }
 
         if ($e instanceof ConnectException) {
-            throw $this->errorResult('Provider API Connection Error', [], [], $e);
+            $this->errorResult('Provider API Connection Error', [], [], $e);
         }
 
         throw $e;
@@ -413,7 +458,7 @@ class Provider extends Category implements ProviderInterface
             return $this->client;
         }
 
-        return $this->client = new Client([
+        $this->client = new Client([
             'base_uri' => $this->configuration->api_url,
             RequestOptions::AUTH => [$this->configuration->username, $this->configuration->password],
             RequestOptions::HEADERS => [
@@ -423,7 +468,9 @@ class Provider extends Category implements ProviderInterface
             ],
             RequestOptions::TIMEOUT => 10, // seconds
             RequestOptions::CONNECT_TIMEOUT => 5, // seconds
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug_mode))
+            'handler' => $this->getGuzzleHandlerStack()
         ]);
+
+        return $this->client;
     }
 }

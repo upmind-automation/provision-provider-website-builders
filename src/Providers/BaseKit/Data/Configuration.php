@@ -14,7 +14,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $brand_ref
  * @property-read string $suspension_package_ref
  * @property-read string|null $auto_login_redirect_url
- * @property-read bool $debug_mode
  */
 class Configuration extends DataSet
 {
@@ -27,7 +26,6 @@ class Configuration extends DataSet
             'brand_ref' => ['required', 'numeric'],
             'suspension_package_ref' => ['required', 'numeric'],
             'auto_login_redirect_url' => ['nullable', 'url'],
-            'debug_mode' => ['boolean'],
         ]);
     }
 }

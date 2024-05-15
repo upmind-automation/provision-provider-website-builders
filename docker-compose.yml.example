@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+
+  #PHP Service
+  provision-provider-website-builders:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+    container_name: provision-provider-website-builders
+    tty: true
+    environment:
+      SERVICE_NAME: provision-provider-website-builders
+      SERVICE_TAGS: dev
+    working_dir: /usr/src/lib
+    volumes:
+      - ./:/usr/src/lib
+    networks:
+      - provision-provider-website-builders-network
+
+#Docker Networks
+networks:
+  provision-provider-website-builders-network:
+    driver: bridge

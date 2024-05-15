@@ -11,7 +11,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * Website.com API credentials.
  *
  * @property-read string $reseller_key Reseller key
- * @property-read bool $debug Whether or not to log API requests and responses
  */
 class Configuration extends DataSet
 {
@@ -19,7 +18,6 @@ class Configuration extends DataSet
     {
         return new Rules([
             'reseller_key' => ['required', 'string'],
-            'debug' => ['boolean'],
         ]);
     }
 }

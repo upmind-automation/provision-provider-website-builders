@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Websitecom;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Str;
@@ -30,7 +29,7 @@ class Provider extends Category implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected WebsitecomApi $api;
+    protected WebsitecomApi|null $api = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -45,10 +44,14 @@ class Provider extends Category implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/websitecom-logo@2x.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function create(CreateParams $params): AccountInfo
     {
         if (!isset($params->domain_name)) {
-            throw $this->errorResult('Domain name is required!');
+            $this->errorResult('Domain name is required!');
         }
 
         try {
@@ -60,6 +63,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -69,6 +76,9 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     private function _getInfo(?int $siteBuilderUserId, string $id, string $message): AccountInfo
     {
         $accountInfo = $this->api()->getInfo($siteBuilderUserId, $id);
@@ -79,6 +89,10 @@ class Provider extends Category implements ProviderInterface
         return AccountInfo::create($accountInfo)->setMessage($message);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function login(AccountIdentifier $params): LoginResult
     {
         try {
@@ -90,6 +104,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function changePackage(ChangePackageParams $params): AccountInfo
     {
         try {
@@ -101,6 +119,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
@@ -112,6 +134,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
@@ -123,6 +149,10 @@ class Provider extends Category implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function terminate(AccountIdentifier $params): ResultData
     {
         try {
@@ -136,30 +166,30 @@ class Provider extends Category implements ProviderInterface
 
     /**
      * @return no-return
-     * @throws ProvisionFunctionError
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function handleException(\Throwable $e, $params = null): void
     {
-        if ($e instanceof RequestException) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
+        if (($e instanceof RequestException) && $e->hasResponse()) {
+            $response = $e->getResponse();
 
-                $body = trim($response->getBody()->__toString());
-                $responseData = json_decode($body, true);
+            $body = trim($response === null ? '' : $response->getBody()->__toString());
+            $responseData = json_decode($body, true);
 
-                $errorMessage = $responseData['message'] ?? $response->getReasonPhrase();
+            $errorMessage = $responseData['message'] ?? $response->getReasonPhrase();
 
-                if (is_null($responseData) && Str::contains($body, 'cloudflare')) {
-                    $errorMessage .= ' - check whitelisted IPs';
-                }
-
-                throw $this->errorResult(
-                    sprintf('Provider API Error: %s', $errorMessage),
-                    ['response_data' => $responseData],
-                    [],
-                    $e
-                );
+            if (is_null($responseData) && Str::contains($body, 'cloudflare')) {
+                $errorMessage .= ' - check whitelisted IPs';
             }
+
+            $this->errorResult(
+                sprintf('Provider API Error: %s', $errorMessage),
+                ['response_data' => $responseData],
+                [],
+                $e
+            );
         }
 
         throw $e;
@@ -181,7 +211,7 @@ class Provider extends Category implements ProviderInterface
             ],
             RequestOptions::TIMEOUT => 10, // seconds
             RequestOptions::CONNECT_TIMEOUT => 5, // seconds
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug))
+            'handler' => $this->getGuzzleHandlerStack()
         ]);
 
         return $this->api = new WebsitecomApi($client, $this->configuration);

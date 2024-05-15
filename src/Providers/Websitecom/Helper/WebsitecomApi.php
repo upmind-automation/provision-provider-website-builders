@@ -19,6 +19,9 @@ class WebsitecomApi
         $this->configuration = $configuration;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function makeRequest(string $command, ?array $params = null, ?array $body = null, ?string $method = 'GET'): ?array
     {
         $requestParams = [];
@@ -43,6 +46,9 @@ class WebsitecomApi
         return $this->parseResponseData($result);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseResponseData(string $result): array
     {
         $parsedResult = json_decode($result, true);
@@ -77,11 +83,17 @@ class WebsitecomApi
 
     /**
      * @return array [(int)site_builder_user_id, (string)account_reference]
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createUser(CreateParams $params): array
     {
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
 
+        /**
+         * @var string $firstName
+         * @var string|null $lastName
+         */
         $body = [
             'clientId' => $params->site_builder_user_id ?: 0,
             'domainName' => $params->domain_name,
@@ -99,6 +111,9 @@ class WebsitecomApi
         ];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getInfo(?int $siteBuilderUserId, string $id): array
     {
         $query = [
@@ -113,13 +128,16 @@ class WebsitecomApi
             'account_reference' => (string)$response['data']['userGuid'],
             'domain_name' => $response['data']['siteDomain'],
             'package_reference' => $response['data']['planId'],
-            'suspended' => $response['data']['userStatus'] == 'S',
+            'suspended' => $response['data']['userStatus'] === 'S',
             'ip_address' => $response['data']['ip'],
             'is_published' => $response['data']['isPublished'],
             'has_ssl' => $response['data']['isSslOn'],
         ];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function suspend(int $siteBuilderUserId, string $id): void
     {
         $query = [
@@ -130,6 +148,9 @@ class WebsitecomApi
         $this->makeRequest("suspend", $query);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function unsuspend(int $siteBuilderUserId, string $id): void
     {
         $query = [
@@ -140,6 +161,9 @@ class WebsitecomApi
         $this->makeRequest("unsuspend", $query);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function terminate(int $siteBuilderUserId, string $id): void
     {
         $query = [
@@ -150,6 +174,9 @@ class WebsitecomApi
         $this->makeRequest("terminate", $query);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function changePackage(int $siteBuilderUserId, string $id, string $packageId): void
     {
         $query = [
@@ -161,6 +188,9 @@ class WebsitecomApi
         $this->makeRequest("changePackage", $query);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function login(int $siteBuilderUserId, string $id): string
     {
         $query = [
