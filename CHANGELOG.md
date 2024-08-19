@@ -2,10 +2,20 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.6.1 - 2024-08-19
+
+- Update website.com exception handler to return a formatted error response for connection exceptions
+- Increase website.com API timeout from 10 to 30 seconds
+
 ## v2.6.0 - 2024-05-15
 
 - Update for PHP 8.1+ and base library v4
 - Add static analyser and docker environment
+
+## v2.5.1 - 2024-08-19
+
+- Update website.com exception handler to return a formatted error response for connection exceptions
+- Increase website.com API timeout from 10 to 30 seconds
 
 ## v2.5.0 - 2024-02-08
 
