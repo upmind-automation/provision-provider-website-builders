@@ -6,6 +6,7 @@ namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Websitecom;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Str;
 use Throwable;
@@ -190,6 +191,14 @@ class Provider extends Category implements ProviderInterface
                 [],
                 $e
             );
+        }
+
+        if ($e instanceof TransferException) {
+            $this->errorResult('Provider API Connection Failed', [
+                'exception' => get_class($e),
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ], [], $e);
         }
 
         throw $e;
