@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.5.1 - 2024-08-19
+
+- Update website.com exception handler to return a formatted error response for connection exceptions
+- Increase website.com API timeout from 10 to 30 seconds
+
 ## v2.5.0 - 2024-02-08
 
 - Add new result data fields for website.com
