@@ -209,7 +209,7 @@ class Provider extends Category implements ProviderInterface
                 'Accept' => 'application/json',
                 'resellerKey' => $this->configuration->reseller_key,
             ],
-            RequestOptions::TIMEOUT => 10, // seconds
+            RequestOptions::TIMEOUT => 30, // seconds
             RequestOptions::CONNECT_TIMEOUT => 5, // seconds
             'handler' => $this->getGuzzleHandlerStack()
         ]);
