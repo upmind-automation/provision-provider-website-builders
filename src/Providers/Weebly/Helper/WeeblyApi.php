@@ -96,7 +96,7 @@ class WeeblyApi
         $body = [
             'email' => $params->customer_email,
             'first_name' => $firstName,
-            'last_name' => $lastName ?? 'UNKNOWN',
+            'last_name' => $lastName,
             "language" => $params->language_code ?? 'en',
         ];
 
