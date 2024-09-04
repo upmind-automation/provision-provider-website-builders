@@ -91,10 +91,6 @@ class WeeblyApi
      */
     public function createUser(CreateParams $params): string
     {
-        /**
-         * @var string $firstName
-         * @var string|null $lastName
-         */
         @[$firstName, $lastName] = explode(' ', $params->customer_name, 2);
 
         $body = [
@@ -222,9 +218,9 @@ class WeeblyApi
     /**
      * @param string $id
      * @param string $domain
-     * @return void
+     * @return string
      */
-    private function getSiteId(string $id, string $domain): ?string
+    private function getSiteId(string $id, string $domain): string
     {
         $response = $this->makeRequest("user/$id/site");
 
