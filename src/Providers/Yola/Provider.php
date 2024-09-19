@@ -69,8 +69,11 @@ class Provider extends Category implements ProviderInterface
         try {
             $this->api()->changePackage($params->site_builder_user_id, $userRef, $params->package_reference);
         } catch (\Throwable $e) {
-            $response = $e->getResponse();
-            $errorMessage = $response->getReasonPhrase();
+            $errorMessage = "Unknown error";
+            if (($e instanceof RequestException) && $e->hasResponse()) {
+                $response = $e->getResponse();
+                $errorMessage = $response->getReasonPhrase();
+            }
 
             return $this->_getInfo($params->site_builder_user_id, $userRef, "Package  {$params->package_reference} error: {$errorMessage}");
         }
