@@ -81,8 +81,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    public
-    function getInfo(AccountIdentifier $params): AccountInfo
+    public function getInfo(AccountIdentifier $params): AccountInfo
     {
         try {
             if (!isset($params->site_builder_user_id)) {
@@ -98,8 +97,7 @@ class Provider extends Category implements ProviderInterface
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    private
-    function _getInfo(string $id, ?string $site, string $message): AccountInfo
+    private function _getInfo(string $id, ?string $site, string $message): AccountInfo
     {
         $accountInfo = $this->api()->getInfo($id, $site);
 
@@ -110,8 +108,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    public
-    function login(AccountIdentifier $params): LoginResult
+    public function login(AccountIdentifier $params): LoginResult
     {
         try {
             if (!isset($params->site_builder_user_id)) {
@@ -153,8 +150,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    public
-    function suspend(AccountIdentifier $params): AccountInfo
+    public function suspend(AccountIdentifier $params): AccountInfo
     {
         try {
             if (!isset($params->site_builder_user_id)) {
@@ -173,8 +169,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    public
-    function unSuspend(UnSuspendParams $params): AccountInfo
+    public function unSuspend(UnSuspendParams $params): AccountInfo
     {
         try {
             if (!isset($params->site_builder_user_id)) {
@@ -193,8 +188,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    public
-    function terminate(AccountIdentifier $params): ResultData
+    public function terminate(AccountIdentifier $params): ResultData
     {
         try {
             if (!isset($params->site_builder_user_id)) {
@@ -215,8 +209,7 @@ class Provider extends Category implements ProviderInterface
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Throwable
      */
-    protected
-    function handleException(\Throwable $e, $params = null): void
+    protected function handleException(\Throwable $e, $params = null): void
     {
         if (($e instanceof RequestException) && $e->hasResponse()) {
             $response = $e->getResponse();
@@ -237,8 +230,7 @@ class Provider extends Category implements ProviderInterface
         throw $e;
     }
 
-    public
-    function api(): WeeblyApi
+    public function api(): WeeblyApi
     {
         if (isset($this->api)) {
             return $this->api;

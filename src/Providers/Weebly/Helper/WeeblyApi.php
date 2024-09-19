@@ -104,7 +104,6 @@ class WeeblyApi
             $body['password'] = $params->password;
         }
 
-
         $response = $this->makeRequest('user', null, $body, 'POST');
         return $response['user']['user_id'];
     }
@@ -174,7 +173,6 @@ class WeeblyApi
     {
         $this->makeRequest("user/$id/enable", null, null, 'POST');
     }
-
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
