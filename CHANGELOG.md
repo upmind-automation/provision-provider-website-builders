@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.5.3 - 2024-09-20
+
+- Fix string casts in Weebly provider
+
 ## v2.5.2 - 2024-09-20
 
 - Implement Weebly provider
