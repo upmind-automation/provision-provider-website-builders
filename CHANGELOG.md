@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.7.1 - 2024-09-20
+
+- Fix string casts in Weebly provider
+
 ## v2.7.0 - 2024-09-20
 
 - Implement Weebly provider
@@ -15,6 +19,10 @@ All notable changes to the package will be documented in this file.
 
 - Update for PHP 8.1+ and base library v4
 - Add static analyser and docker environment
+
+## v2.5.3 - 2024-09-20
+
+- Fix string casts in Weebly provider
 
 ## v2.5.2 - 2024-09-20
 
