@@ -3,6 +3,7 @@
 namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Weebly\Helper;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use Upmind\ProvisionProviders\WebsiteBuilders\Data\CreateParams;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Weebly\Data\Configuration;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -111,88 +112,114 @@ class WeeblyApi
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getInfo(string $id, ?string $domain): array
+    public function getInfo(string $userId, string $siteId): array
     {
-        $response = $this->makeRequest("user/$id/site");
-
-        if ($domain !== null) {
-            foreach ($response['sites'] as $s) {
-                if ($s['domain'] === $domain) {
-                    $site = $s;
-                    break;
-                }
-            }
-        } else {
-            if (count($response['sites']) > 0) {
-                $site = $response['sites'][0];
-            }
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
         }
 
-        if ($domain && !isset($site)) {
-            throw ProvisionFunctionError::create("Domain $domain not found")
-                ->withData([
-                    'response' => $response,
-                ]);
-        }
-
-        $plan = '-';
-        if (isset($site)) {
-            $siteId = $site['site_id'];
-            $plans = $this->makeRequest("user/$id/site/$siteId/plan");
-            foreach ($plans['plans'] as $p) {
-                $plan = $p['plan_id'];
-                break;
-            }
-        }
+        $site = $this->makeRequest("user/$userId/site/$siteId")['site'];
+        $plan = $this->getSitePlan($userId, $siteId);
 
         return [
-            'site_builder_user_id' => $id,
-            'account_reference' => '-',
-            'domain_name' => isset($site) ? $site['domain'] : null,
-            'package_reference' => $plan,
-            'suspended' => isset($site) ? $site['suspended'] : null,
-            'ip_address' => null,
-            'is_published' => isset($site) ? $site['publish_state'] == 'published' : null,
-            'has_ssl' => isset($site) ? $site['allow_ssl'] : null,
-            'site_count' => count($response['sites'])
+            'site_builder_user_id' => $userId,
+            'account_reference' => $siteId,
+            'domain_name' => $site['domain'],
+            'package_reference' => $plan['name'],
+            'suspended' => $site['suspended'],
+            'ip_address' => null, // can we get this somehow ?
+            'is_published' => $site['publish_state'] == 'published',
+            'has_ssl' => $site['allow_ssl'],
         ];
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function suspend(string $id): void
+    public function suspend(string $userId, string $siteId): void
     {
-        $this->makeRequest("user/$id/disable", null, null, 'POST');
-    }
-
-    /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function unsuspend(string $id): void
-    {
-        $this->makeRequest("user/$id/enable", null, null, 'POST');
-    }
-
-    /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function changePackage(string $id, string $domain, string $packageId, ?int $term): void
-    {
-        if ($term && $term != 1 && $term != 12) {
-            throw ProvisionFunctionError::create('billing_cycle_months must be 1 or 12');
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
         }
 
-        $siteId = $this->getSiteId($id, $domain);
-        $this->makeRequest("user/$id/site/$siteId/plan", null, ['plan_id' => $packageId, 'term' => $term ?? 1], 'POST');
+        $this->makeRequest("user/$userId/site/$siteId/disable", null, null, 'POST');
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function login(string $id): string
+    public function unsuspend(string $userId, string $siteId): void
     {
-        $response = $this->makeRequest("user/$id/loginLink");
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
+        }
+
+        $this->makeRequest("user/$userId/site/$siteId/enable", null, null, 'POST');
+    }
+
+    public function getSitePlan(string $userId, string $siteId): array
+    {
+        $plans = $this->makeRequest("user/$userId/site/$siteId/plan")['plans'];
+
+        return current($plans) ?: [];
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function changePackage(string $userId, string $siteId, string $planId, int $term): void
+    {
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
+        }
+
+        $body = ['plan_id' => $planId, 'term' => $term];
+
+        $this->makeRequest("user/$userId/site/$siteId/plan", null, $body, 'POST');
+    }
+
+    public function changeDomain(string $userId, string $siteId, string $domain): void
+    {
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
+        }
+
+        $body = ['domain' => $domain];
+
+        $this->makeRequest("user/$userId/site/$siteId", null, $body, 'PATCH');
+    }
+
+    public function findPlan(string $packageReference): array
+    {
+        $plans = $this->makeRequest('plan')['plans'];
+
+        $matchBy = ['name'];
+        if (is_numeric($packageReference)) {
+            array_unshift($matchBy, 'plan_id');
+        }
+
+        foreach ($matchBy as $field) {
+            foreach ($plans as $plan) {
+                if ($plan[$field] === $packageReference) {
+                    return $plan;
+                }
+            }
+        }
+
+        throw ProvisionFunctionError::create("Plan $packageReference not found");
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function login(string $userId): string
+    {
+        $response = $this->makeRequest("user/$userId/loginLink");
 
         return $response['link'];
     }
@@ -200,42 +227,60 @@ class WeeblyApi
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function terminate(string $id): void
+    public function terminate(string $userId, string $siteId): void
     {
-        $this->makeRequest("user/$id", null, null, 'DELETE');
+        if (!is_numeric($siteId)) {
+            // siteId is domain - lookup real site id
+            $siteId = $this->getSiteId($userId, $siteId);
+        }
+
+        $this->makeRequest("user/$userId/site/$siteId", null, null, 'DELETE');
     }
 
     /**
+     * @return string Site id
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createDomain(string $userId, string $domain): void
+    public function createDomain(string $userId, string $domain, string $planId, int $term): string
     {
-        $this->makeRequest("user/$userId/site", null, ['domain' => $domain], 'POST');
+        $body = [
+            'domain' => $domain,
+            'plan_id' => $planId,
+            'term' => $term,
+        ];
+
+        $site = $this->makeRequest("user/$userId/site", null, $body, 'POST')['site'];
+        return $site['site_id'];
     }
 
     /**
-     * @param string $id
+     * Since Weebly sometimes prepends www. and toggles to lowercase, check the 2
+     * given domains for equality with this in mind.
+     */
+    public function domainsAreEqual(string $domain1, string $domain2): bool
+    {
+        return Str::start(strtolower($domain1), 'www.') === Str::start(strtolower($domain2), 'www.');
+    }
+
+    /**
+     * @param string $userId
      * @param string $domain
      * @return string
      */
-    private function getSiteId(string $id, string $domain): string
+    private function getSiteId(string $userId, string $domain): string
     {
-        $response = $this->makeRequest("user/$id/site");
+        $response = $this->makeRequest("user/$userId/site");
 
         foreach ($response['sites'] as $s) {
-            if ($s['domain'] === $domain) {
-                $siteId = $s['site_id'];
-                break;
+            if ($this->domainsAreEqual($s['domain'], $domain)) {
+                return $s['site_id'];
             }
         }
 
-        if (!isset($siteId)) {
-            throw ProvisionFunctionError::create("Domain $domain not found")
-                ->withData([
-                    'response' => $response,
-                ]);
-        }
-
-        return $siteId;
+        throw ProvisionFunctionError::create("Domain $domain not found")
+        ->withData([
+            'response' => $response,
+        ]);
     }
 }

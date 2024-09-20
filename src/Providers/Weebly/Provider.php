@@ -52,28 +52,18 @@ class Provider extends Category implements ProviderInterface
     public function create(CreateParams $params): AccountInfo
     {
         try {
-            $userId = $this->api()->createUser($params);
+            if (empty($params->domain_name)) {
+                $this->errorResult('Domain name is required!');
+            }
+
+            $plan = $this->api()->findPlan((string)$params->package_reference);
+            $userId = $params->site_builder_user_id ?? $this->api()->createUser($params);
+
+            $siteId = $this->api()->createDomain($userId, $params->domain_name, $plan['plan_id'], (int)$params->billing_cycle_months);
+
+            return $this->getAccountInfo($userId, $siteId, 'Website created');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
-        }
-
-        try {
-            if ($params->domain_name != null) {
-                $this->api()->createDomain($userId, $params->domain_name);
-                $this->api()->changePackage($userId, $params->domain_name, $params->package_reference, (int)$params->billing_cycle_months);
-            }
-
-            return $this->_getInfo($userId, null, 'Account data obtained');
-        } catch (\Throwable $e) {
-            if (($e instanceof RequestException) && $e->hasResponse()) {
-                $response = $e->getResponse();
-
-                $body = trim($response === null ? '' : $response->getBody()->__toString());
-                $responseData = json_decode($body, true);
-
-                $errorMessage = $responseData["error"]['message'] ?? $response->getReasonPhrase();
-            }
-            return $this->_getInfo($userId, null, $errorMessage ?? $e->getMessage());
         }
     }
 
@@ -85,10 +75,10 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
-            return $this->_getInfo($params->site_builder_user_id, $params->domain_name, 'Account data obtained');
+            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference);
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -97,11 +87,11 @@ class Provider extends Category implements ProviderInterface
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    private function _getInfo(string $id, ?string $site, string $message): AccountInfo
+    private function getAccountInfo(string $userId, string $siteId, ?string $message = null): AccountInfo
     {
-        $accountInfo = $this->api()->getInfo($id, $site);
+        $accountInfo = $this->api()->getInfo($userId, $siteId);
 
-        return AccountInfo::create($accountInfo)->setMessage($message);
+        return AccountInfo::create($accountInfo)->setMessage($message ?: 'Account data obtained');
     }
 
     /**
@@ -112,7 +102,7 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
             $url = $this->api()->login($params->site_builder_user_id);
@@ -131,16 +121,30 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
-            if (!isset($params->domain_name)) {
-                $this->errorResult('Domain name is required!');
+            $info = $this->getAccountInfo($params->site_builder_user_id, $params->account_reference);
+            $plan = $this->api()->findPlan((string)$params->package_reference);
+
+            if ($info->package_reference !== $plan['name']) {
+                $this->api()->changePackage(
+                    $params->site_builder_user_id,
+                    $params->account_reference,
+                    $plan['plan_id'],
+                    (int)$params->billing_cycle_months
+                );
             }
 
-            $this->api()->changePackage($params->site_builder_user_id, $params->domain_name, $params->package_reference, (int)$params->billing_cycle_months);
+            if (!$this->api()->domainsAreEqual($info->domain_name, $params->domain_name)) {
+                $this->api()->changeDomain(
+                    $params->site_builder_user_id,
+                    $params->account_reference,
+                    $params->domain_name
+                );
+            }
 
-            return $this->_getInfo($params->site_builder_user_id, null, 'Package changed');
+            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Package changed');
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -154,12 +158,12 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->suspend($params->site_builder_user_id);
+            $this->api()->suspend($params->site_builder_user_id, $params->account_reference);
 
-            return $this->_getInfo($params->site_builder_user_id, null, 'Account suspended');
+            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Account suspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -173,12 +177,12 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->unsuspend($params->site_builder_user_id);
+            $this->api()->unsuspend($params->site_builder_user_id, $params->account_reference);
 
-            return $this->_getInfo($params->site_builder_user_id, null, 'Account unsuspended');
+            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Account unsuspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -192,10 +196,10 @@ class Provider extends Category implements ProviderInterface
     {
         try {
             if (!isset($params->site_builder_user_id)) {
-                $this->errorResult('User id is required!');
+                $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->terminate($params->site_builder_user_id);
+            $this->api()->terminate($params->site_builder_user_id, $params->account_reference);
 
             return $this->okResult('Account Terminated');
         } catch (\Throwable $e) {
