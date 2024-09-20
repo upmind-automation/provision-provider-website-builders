@@ -45,12 +45,13 @@ Alternatively you can start using it for your business immediately with [Upmind.
 The following providers are currently implemented:
   - [BaseKit](https://apidocs.basekit.com/api/integration-guide/#api-method-overview)
   - [Website.com](https://www.website.com/)
+  - [Weebly](https://www.weebly.com/)
 
 ## Functions
 
 ### create()
 
-Creates a site builder account and returns the `account_identifier` which can be used to identify the account in subsequent requests, and other account information.
+Creates a site builder account and returns the `account_identifier` (e.g., a domain name) which can be used to identify the account in subsequent requests, and other account information.
 
 ### getInfo()
 
@@ -88,6 +89,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
  - [Harry Lewis](https://github.com/uphlewis)
  - [Codeline](https://github.com/CodelineNL)
+ - [Roussetos Karafyllakis](https://github.com/RoussKS)
  - [All Contributors](../../contributors)
 
 ## License
