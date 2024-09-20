@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.5.2 - 2024-09-20
+
+- Implement Weebly provider
+
 ## v2.5.1 - 2024-08-19
 
 - Update website.com exception handler to return a formatted error response for connection exceptions
