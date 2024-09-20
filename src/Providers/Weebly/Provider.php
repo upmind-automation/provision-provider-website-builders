@@ -59,9 +59,9 @@ class Provider extends Category implements ProviderInterface
             $plan = $this->api()->findPlan((string)$params->package_reference);
             $userId = $params->site_builder_user_id ?? $this->api()->createUser($params);
 
-            $siteId = $this->api()->createDomain($userId, $params->domain_name, $plan['plan_id'], (int)$params->billing_cycle_months);
+            $siteId = $this->api()->createDomain((string)$userId, $params->domain_name, $plan['plan_id'], (int)$params->billing_cycle_months);
 
-            return $this->getAccountInfo($userId, $siteId, 'Website created');
+            return $this->getAccountInfo((string)$userId, $siteId, 'Website created');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -78,7 +78,7 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference);
+            return $this->getAccountInfo((string)$params->site_builder_user_id, (string)$params->account_reference);
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -105,7 +105,7 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            $url = $this->api()->login($params->site_builder_user_id);
+            $url = $this->api()->login((string)$params->site_builder_user_id);
 
             return new LoginResult(['login_url' => $url]);
         } catch (Throwable $e) {
@@ -124,27 +124,27 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            $info = $this->getAccountInfo($params->site_builder_user_id, $params->account_reference);
+            $info = $this->getAccountInfo((string)$params->site_builder_user_id, (string)$params->account_reference);
             $plan = $this->api()->findPlan((string)$params->package_reference);
 
             if ($info->package_reference !== $plan['name']) {
                 $this->api()->changePackage(
-                    $params->site_builder_user_id,
-                    $params->account_reference,
+                    (string)$params->site_builder_user_id,
+                    (string)$params->account_reference,
                     $plan['plan_id'],
                     (int)$params->billing_cycle_months
                 );
             }
 
-            if (!$this->api()->domainsAreEqual($info->domain_name, $params->domain_name)) {
+            if ($params->domain_name && !$this->api()->domainsAreEqual($info->domain_name, $params->domain_name)) {
                 $this->api()->changeDomain(
-                    $params->site_builder_user_id,
-                    $params->account_reference,
+                    (string)$params->site_builder_user_id,
+                    (string)$params->account_reference,
                     $params->domain_name
                 );
             }
 
-            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Package changed');
+            return $this->getAccountInfo((string)$params->site_builder_user_id, (string)$params->account_reference, 'Package changed');
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -161,9 +161,9 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->suspend($params->site_builder_user_id, $params->account_reference);
+            $this->api()->suspend((string)$params->site_builder_user_id, (string)$params->account_reference);
 
-            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Account suspended');
+            return $this->getAccountInfo((string)$params->site_builder_user_id, (string)$params->account_reference, 'Account suspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -180,9 +180,9 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->unsuspend($params->site_builder_user_id, $params->account_reference);
+            $this->api()->unsuspend((string)$params->site_builder_user_id, (string)$params->account_reference);
 
-            return $this->getAccountInfo($params->site_builder_user_id, $params->account_reference, 'Account unsuspended');
+            return $this->getAccountInfo((string)$params->site_builder_user_id, (string)$params->account_reference, 'Account unsuspended');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -199,7 +199,7 @@ class Provider extends Category implements ProviderInterface
                 $this->errorResult('Site builder user id is required!');
             }
 
-            $this->api()->terminate($params->site_builder_user_id, $params->account_reference);
+            $this->api()->terminate((string)$params->site_builder_user_id, (string)$params->account_reference);
 
             return $this->okResult('Account Terminated');
         } catch (\Throwable $e) {
