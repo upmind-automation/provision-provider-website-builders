@@ -30,7 +30,7 @@ class Provider extends Category implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected WeeblyApi|null $api = null;
+    protected ?WeeblyApi $api = null;
 
     public function __construct(Configuration $configuration)
     {
