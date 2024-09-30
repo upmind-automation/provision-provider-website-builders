@@ -12,6 +12,7 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  *
  * @property-read string $auth_key Auth key
  * @property-read string $agent_id AgentID header
+ * @property-read string $brand_id Brand ID
  * @property-read bool|null $sandbox
  */
 class Configuration extends DataSet
@@ -21,6 +22,7 @@ class Configuration extends DataSet
         return new Rules([
             'auth_key' => ['required', 'string'],
             'agent_id' => ['string'],
+            'brand_id' => ['required', 'string'],
             'sandbox' => ['nullable', 'boolean'],
         ]);
     }

@@ -52,7 +52,7 @@ class YolaApi
         $requestParams['headers']['SBS-Signature'] = $signature;
 
 
-        $response = $this->client->request($method, $command, $requestParams);
+        $response = $this->client->request($method, "/{$this->configuration->brand_id}" . $command, $requestParams);
         $result = $response->getBody()->getContents();
 
         $response->getBody()->close();
@@ -101,67 +101,75 @@ class YolaApi
             'language' => $params->language ?? 'en',
         ];
 
-        $brandId = $params->site_builder_user_id;
-
-        $response = $this->makeRequest("/$brandId/users", null, $body, 'POST');
+        $response = $this->makeRequest("/users", null, $body, 'POST');
         return (string)$response['detail']['userID'];
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getInfo(string $brandId, string $userId): array
+    public function getInfo(string $userId, string $domainId): array
     {
-        $response = $this->makeRequest("/$brandId/users/$userId", ['extras' => "subs"]);
-        foreach ($response['detail']['subs'] as $subscription) {
-            if (in_array($subscription['status'], [1, 2, 8])) {
-                $planId = $subscription['planID'];
+        $response = $this->makeRequest("/accounts/$userId", ['extras' => "subs"]);
+
+        foreach ($response['detail']['domains'] as $d) {
+            if ($d['domainID'] == $domainId || $d['domain'] == $domainId) {
+                $domain = $d;
+                foreach ($domain['subs'] as $subscription) {
+                    if (in_array($subscription['status'], [1, 2, 8])) {
+                        $planId = $subscription['planID'];
+                    }
+                }
             }
+        }
+
+        if(!isset($domain)) {
+            throw ProvisionFunctionError::create("DomainId $domainId not found");
         }
 
         return [
             'site_builder_user_id' => $userId,
-            'account_reference' => (string)$response['detail']['brandID'],
-            'domain_name' => $response['detail']['domain'],
+            'account_reference' => $domain['domainID'] ?? $domainId,
+            'domain_name' => $domain['domain'] ?? "",
             'package_reference' => $planId ?? "-",
-            'suspended' => $response['detail']['status'] == 3,
+            'suspended' =>  $domain['status'] == 3,
         ];
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function suspend(string $brandId, string $userId): void
+    public function suspend(string $userId, string $domainId): void
     {
-        $this->makeRequest("/$brandId/users/$userId/suspend", null, null, "PUT");
+        $this->makeRequest("/accounts/$userId/domains/$domainId/suspend", null, null, "PUT");
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function unsuspend(string $brandId, string $userId): void
+    public function unsuspend(string $userId, string $domainId): void
     {
-        $this->makeRequest("/$brandId/users/$userId/reactivate-all", null, null, "PUT");
+        $this->makeRequest("/accounts/$userId/domains/$domainId/reactivate-all", null, null, "PUT");
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function terminate(string $brandId, string $userId): void
+    public function terminate(string $userId, string $domainId): void
     {
-        $this->makeRequest("/$brandId/users/$userId", null, null, "DELETE");
+        $this->makeRequest("/accounts/$userId/domains/$domainId", null, null, "DELETE");
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function changePackage(string $brandId, string $userId, string $packageId): void
+    public function changePackage($domainId, string $packageId): void
     {
         $body = [
             'planID' => $packageId,
         ];
 
-        $response = $this->makeRequest("/$brandId/users/$userId", ['extras' => "subs"]);
+        $response = $this->makeRequest("/users/$domainId", ['extras' => "subs"]);
         foreach ($response['detail']['subs'] as $subscription) {
             if (in_array($subscription['status'], [1, 2, 8])) {
                 $planId = $subscription['ID'];
@@ -169,19 +177,47 @@ class YolaApi
         }
 
         if (isset($planId)) {
-            $this->makeRequest("/$brandId/users/$userId/subscriptions/$planId", null, $body, 'DELETE');
+            $this->makeRequest("/users/$domainId/subscriptions/$planId", null, $body, 'DELETE');
         }
 
-        $this->makeRequest("/$brandId/users/$userId/subscriptions", null, $body, 'POST');
+        $this->makeRequest("/users/$domainId/subscriptions", null, $body, 'POST');
     }
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function login(string $brandId, string $userId): string
+    public function login(string $domainId): string
     {
-        $response = $this->makeRequest("/$brandId/users/$userId/sso/yola", ['noredir' => 1]);
+        $response = $this->makeRequest("/users/$domainId/sso/yola", ['noredir' => 1]);
 
         return $response['detail']['ssoURL'];
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function addDomain(string $userId, string $domainName)
+    {
+        $body = [
+            'domain' => $domainName,
+        ];
+
+        $this->makeRequest("/accounts/$userId/domains", null, $body, 'POST');
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getDomainId( string $userId, string $domainName)
+    {
+        $response = $this->makeRequest("/accounts/$userId");
+
+        foreach ($response['detail']['domains'] as $d) {
+            if ($d['domain'] == $domainName) {
+                return $d['domainID'];
+            }
+        }
+
+        return null;
     }
 }
