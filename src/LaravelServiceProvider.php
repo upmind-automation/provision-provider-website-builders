@@ -9,6 +9,7 @@ use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Example\Provider as Exam
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\BaseKit\Provider as BaseKit;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Websitecom\Provider as Websitecom;
 use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Provider as Yola;
+use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Weebly\Provider as Weebly;
 
 class LaravelServiceProvider extends ProvisionServiceProvider
 {
@@ -21,5 +22,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('website-builders', 'base-kit', BaseKit::class);
         $this->bindProvider('website-builders', 'websitecom', Websitecom::class);
         $this->bindProvider('website-builders', 'yola', Yola::class);
+        $this->bindProvider('website-builders', 'weebly', Weebly::class);
     }
 }
