@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Data;
+namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola\Data;
 
 use Upmind\ProvisionBase\Provider\DataSet\DataSet;
 use Upmind\ProvisionBase\Provider\DataSet\Rules;

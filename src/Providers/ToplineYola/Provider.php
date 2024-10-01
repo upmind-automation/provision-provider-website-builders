@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola;
+namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -20,8 +20,8 @@ use Upmind\ProvisionProviders\WebsiteBuilders\Data\ChangePackageParams;
 use Upmind\ProvisionProviders\WebsiteBuilders\Data\CreateParams;
 use Upmind\ProvisionProviders\WebsiteBuilders\Data\LoginResult;
 use Upmind\ProvisionProviders\WebsiteBuilders\Data\UnSuspendParams;
-use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Data\Configuration;
-use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Helper\YolaApi;
+use Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola\Data\Configuration;
+use Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola\Helper\YolaApi;
 
 /**
  * Yola provider.
@@ -30,7 +30,7 @@ class Provider extends Category implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected YolaApi|null $api = null;
+    protected ?YolaApi $api = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -40,8 +40,8 @@ class Provider extends Category implements ProviderInterface
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
-            ->setName('Yola')
-            ->setDescription('Create, manage and log into Yola site builder accounts')
+            ->setName('Topline Yola')
+            ->setDescription('Create, manage and log into Yola site builder accounts via Topline Cloud Services')
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/yola-logo@2x.png');
     }
 

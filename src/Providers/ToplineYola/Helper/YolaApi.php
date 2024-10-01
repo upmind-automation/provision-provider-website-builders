@@ -1,10 +1,10 @@
 <?php
 
-namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Helper;
+namespace Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola\Helper;
 
 use GuzzleHttp\Client;
 use Upmind\ProvisionProviders\WebsiteBuilders\Data\CreateParams;
-use Upmind\ProvisionProviders\WebsiteBuilders\Providers\Yola\Data\Configuration;
+use Upmind\ProvisionProviders\WebsiteBuilders\Providers\ToplineYola\Data\Configuration;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
 class YolaApi
@@ -123,7 +123,7 @@ class YolaApi
             }
         }
 
-        if(!isset($domain)) {
+        if (!isset($domain)) {
             throw ProvisionFunctionError::create("DomainId $domainId not found");
         }
 
@@ -208,7 +208,7 @@ class YolaApi
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getDomainId( string $userId, string $domainName)
+    public function getDomainId(string $userId, string $domainName)
     {
         $response = $this->makeRequest("/accounts/$userId");
 
