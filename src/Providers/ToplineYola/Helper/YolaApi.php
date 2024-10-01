@@ -51,7 +51,6 @@ class YolaApi
         $requestParams['headers']['SBS-Expires'] = $expiry;
         $requestParams['headers']['SBS-Signature'] = $signature;
 
-
         $response = $this->client->request($method, "/{$this->configuration->brand_id}" . $command, $requestParams);
         $result = $response->getBody()->getContents();
 
@@ -132,7 +131,7 @@ class YolaApi
             'account_reference' => $domain['domainID'] ?? $domainId,
             'domain_name' => $domain['domain'] ?? "",
             'package_reference' => $planId ?? "-",
-            'suspended' =>  $domain['status'] == 3,
+            'suspended' => $domain['status'] == 3,
         ];
     }
 
