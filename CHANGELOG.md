@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.5.4 - 2024-10-02
+
+- Implement Yola provider via Topline Cloud Services
+
 ## v2.5.3 - 2024-09-20
 
 - Fix string casts in Weebly provider
