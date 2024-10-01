@@ -163,24 +163,56 @@ class YolaApi
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function changePackage($domainId, string $packageId): void
+    public function deleteUser(string $userId): void
+    {
+        $this->makeRequest("/accounts/$userId", null, null, "DELETE");
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function changePackage($domainId, string $planId): void
     {
         $body = [
-            'planID' => $packageId,
+            'planID' => $planId,
         ];
 
         $response = $this->makeRequest("/users/$domainId", ['extras' => "subs"]);
         foreach ($response['detail']['subs'] as $subscription) {
             if (in_array($subscription['status'], [1, 2, 8])) {
-                $planId = $subscription['ID'];
+                $subscriptionId = $subscription['ID'];
             }
         }
 
-        if (isset($planId)) {
-            $this->makeRequest("/users/$domainId/subscriptions/$planId", null, $body, 'DELETE');
+        if (isset($subscriptionId)) {
+            $this->makeRequest("/users/$domainId/subscriptions/$subscriptionId", null, $body, 'DELETE');
         }
 
         $this->makeRequest("/users/$domainId/subscriptions", null, $body, 'POST');
+    }
+
+    public function getPlan(string $package): array
+    {
+        $plans = $this->makeRequest("/plans")['detail']['planIDs'];
+
+        $findBy = [
+            'planID',
+            'planName',
+            'shortName',
+        ];
+        if (is_numeric($package)) {
+            array_unshift($findBy, 'ID');
+        }
+
+        foreach ($findBy as $key) {
+            foreach ($plans as $plan) {
+                if (trim((string)$plan[$key]) === $package) {
+                    return $plan;
+                }
+            }
+        }
+
+        throw ProvisionFunctionError::create("Package $package not found");
     }
 
     /**

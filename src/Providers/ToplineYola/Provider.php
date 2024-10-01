@@ -8,7 +8,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -56,6 +55,8 @@ class Provider extends Category implements ProviderInterface
         }
 
         try {
+            $plan = $this->api()->getPlan($params->package_reference);
+
             if (!isset($params->site_builder_user_id)) {
                 $userRef = $this->api()->createUser($params);
             } else {
@@ -63,25 +64,19 @@ class Provider extends Category implements ProviderInterface
                 $this->api()->addDomain($userRef, $params->domain_name);
             }
 
-        } catch (\Throwable $e) {
-            $this->handleException($e, $params);
-        }
-
-        try {
             $domainId = $this->api()->getDomainId($userRef, $params->domain_name);
-
-            $this->api()->changePackage($domainId, $params->package_reference);
+            $this->api()->changePackage($domainId, $plan['planID']);
         } catch (\Throwable $e) {
-            $errorMessage = "Unknown error";
-            if (($e instanceof RequestException) && $e->hasResponse()) {
-                $response = $e->getResponse();
-                $errorMessage = $response->getReasonPhrase();
+            try {
+                if (isset($domainId)) {
+                    $this->api()->terminate($userRef, $domainId);
+                }
+            } finally {
+                $this->handleException($e, $params);
             }
-
-            return $this->_getInfo($userRef, $params->domain_name, "Package  {$params->package_reference} error: {$errorMessage}");
         }
 
-        return $this->_getInfo($userRef, $params->domain_name, 'Account data obtained');
+        return $this->_getInfo($userRef, $params->domain_name, 'Account created');
     }
 
     /**
@@ -140,7 +135,8 @@ class Provider extends Category implements ProviderInterface
         }
 
         try {
-            $this->api()->changePackage($params->account_reference, $params->package_reference);
+            $plan = $this->api()->getPlan($params->package_reference);
+            $this->api()->changePackage($params->account_reference, $plan['planID']);
 
             return $this->_getInfo($params->site_builder_user_id, $params->account_reference, 'Package changed');
         } catch (Throwable $e) {
@@ -178,9 +174,11 @@ class Provider extends Category implements ProviderInterface
         }
 
         try {
+            $plan = $this->api()->getPlan($params->package_reference);
+
             $this->api()->unsuspend($params->site_builder_user_id, $params->account_reference);
 
-            $this->api()->changePackage($params->account_reference, $params->package_reference);
+            $this->api()->changePackage($params->account_reference, $plan['planID']);
 
             return $this->_getInfo($params->site_builder_user_id, $params->account_reference, 'Account unsuspended');
         } catch (\Throwable $e) {
@@ -215,20 +213,44 @@ class Provider extends Category implements ProviderInterface
      */
     protected function handleException(\Throwable $e, $params = null): void
     {
-        if (($e instanceof RequestException) && $e->hasResponse()) {
-            $response = $e->getResponse();
+        if ($e instanceof TransferException) {
+            $errorMessage = 'Provider Connection Failed';
+            $errorData = [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ];
 
-            $body = trim($response === null ? '' : $response->getBody()->__toString());
-            $responseData = json_decode($body, true);
+            if (($e instanceof RequestException) && $e->hasResponse()) {
+                $response = $e->getResponse();
+                $body = trim($response === null ? '' : $response->getBody()->__toString());
+                $responseData = json_decode($body, true);
 
-            $errorMessage = $response->getReasonPhrase();
+                $errorMessage = 'Provider API Error';
+                $errorData = [
+                    'response_data' => $responseData,
+                ];
+                if ($responseData === null) {
+                    $errorData['response_body'] = $body;
+                }
 
-            $this->errorResult(
-                sprintf('Provider API Error: %s', $errorMessage),
-                ['response_data' => $responseData],
-                [],
-                $e
-            );
+                if (!empty($responseData['message'])) {
+                    $errorMessage .= '; ' . $responseData['message'];
+                }
+                if (!empty($responseData['detail'])) {
+                    if (is_string($responseData['detail'])) {
+                        $errorMessage .= '; ' . $responseData['detail'];
+                    } elseif (!empty($responseData['detail']['message'])) {
+                        $errorMessage .= '; ' . $responseData['detail']['message'];
+                    } else {
+                        $errorMessage .= '; unknown error';
+                    }
+                }
+                if (empty($responseData['message']) && empty($responseData['detail'])) {
+                    $errorMessage .= '; ' . $response->getReasonPhrase();
+                }
+            }
+
+            $this->errorResult($errorMessage, $errorData, [], $e);
         }
 
         throw $e;
