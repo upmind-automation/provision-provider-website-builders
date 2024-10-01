@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.8.0 - 2024-10-02
+
+- Implement Yola provider via Topline Cloud Services
+
 ## v2.7.1 - 2024-09-20
 
 - Fix string casts in Weebly provider
@@ -19,6 +23,10 @@ All notable changes to the package will be documented in this file.
 
 - Update for PHP 8.1+ and base library v4
 - Add static analyser and docker environment
+
+## v2.5.4 - 2024-10-02
+
+- Implement Yola provider via Topline Cloud Services
 
 ## v2.5.3 - 2024-09-20
 
