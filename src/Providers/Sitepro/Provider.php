@@ -50,7 +50,7 @@ class Provider extends Category implements ProviderInterface
      */
     public function create(CreateParams $params): AccountInfo
     {
-        if (!isset($params->domain_name)) {
+        if (empty($params->domain_name)) {
             $this->errorResult('Domain name is required!');
         }
 
@@ -186,21 +186,28 @@ class Provider extends Category implements ProviderInterface
      */
     protected function handleException(\Throwable $e, $params = null): void
     {
-        if (($e instanceof RequestException) && $e->hasResponse()) {
-            $response = $e->getResponse();
+        if ($e instanceof TransferException) {
+            $errorMessage = 'Provider Connection Failed';
+            $errorData = [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ];
 
-            $body = trim($response === null ? '' : $response->getBody()->__toString());
-            $responseData = json_decode($body, true);
+            if (($e instanceof RequestException) && $e->hasResponse()) {
+                $response = $e->getResponse();
+                $errorMessage = 'Provider API Error';
 
-            $error = $responseData['error'] ?? null;
-            $errorMessage =  $error ?? $response->getReasonPhrase();
+                $body = trim($response === null ? '' : $response->getBody()->__toString());
+                $responseData = json_decode($body, true);
 
-            $this->errorResult(
-                sprintf('Provider API Error: %s', $errorMessage),
-                ['response_data' => $responseData],
-                [],
-                $e
-            );
+                $error = $responseData['error'] ?? null;
+                $errorMessage =  $error ?? $response->getReasonPhrase();
+                $errorData = [
+                    'response_data' => $responseData
+                ];
+            }
+
+            $this->errorResult($errorMessage, $errorData, [], $e);
         }
 
         throw $e;

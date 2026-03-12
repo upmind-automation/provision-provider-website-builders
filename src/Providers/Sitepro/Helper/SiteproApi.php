@@ -248,7 +248,7 @@ class SiteproApi
         return [
             'account_reference' => $domain,
             'domain_name' => $domain,
-            'package_reference' => null,
+            'package_reference' => 'unknown',
             'suspended' => isset($domainData['blocked']) ? (bool)$domainData['blocked'] : null,
             'ip_address' => null,
             'is_published' => isset($domainData['live']) ? (bool)$domainData['live'] : null,
